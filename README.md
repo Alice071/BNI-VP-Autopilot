@@ -101,7 +101,7 @@
 - **架構圖 + 資料流**：[ARCHITECTURE.md](ARCHITECTURE.md)
 - **新 Claude session 上手**：[CLAUDE.md](CLAUDE.md)
 - **完整框架文件**：[docs/framework-documentation-prompt.md](docs/framework-documentation-prompt.md)
-- **License**：[MIT](LICENSE)
+- **License**：[Apache 2.0](LICENSE)（必須署名 + 保留 [NOTICE](NOTICE)；含專利授權）
 
 ### 不在這個 repo 裡的東西
 

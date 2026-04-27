@@ -81,4 +81,6 @@ See [RUNBOOK.md](RUNBOOK.md) for full host provisioning. Short version:
 
 ## License
 
-[MIT](LICENSE) — fork freely. Attribution back to 馬驊 / [蟬說](https://www.chanshuo.tw/) / [痛點科技](https://painpoint-ai.com/) is appreciated but not required.
+[Apache License 2.0](LICENSE) — fork freely. **Attribution required**: keep the [NOTICE](NOTICE) file and the copyright/attribution headers in derivative works (per Apache 2.0 §4(c)(d)). The license also includes a patent grant (§3) and a trademark clause (§6 — does not grant rights to use the "BNI-Masta" name or the original creator's brands).
+
+Attribution back to 馬驊 / [蟬說](https://www.chanshuo.tw/) / [痛點科技](https://painpoint-ai.com/) is built into [NOTICE](NOTICE) and required by §4(d) when you redistribute a fork.
