@@ -39,8 +39,8 @@ function getLineToken() {
     return cfg.channels?.line?.channelAccessToken || null;
   } catch { return null; }
 }
-function getAlexLineId() {
-  if (process.env.ALEX_LINE_ID) return process.env.ALEX_LINE_ID;
+function getOperatorLineId() {
+  if (process.env.OPERATOR_LINE_ID) return process.env.OPERATOR_LINE_ID;
   // Fall back to openclaw.json (channels.line.allowFrom[0]) — confirmed to be the operator's userId
   try {
     const cfg = JSON.parse(readFileSync(OPENCLAW_JSON, "utf8"));
@@ -240,9 +240,9 @@ async function main() {
   console.log(`▸ line digest preview (${text.length} chars):\n----------\n${text}\n----------`);
 
   const token = getLineToken();
-  const userId = getAlexLineId();
+  const userId = getOperatorLineId();
   if (!token) { console.error("✗ no LINE_CHANNEL_ACCESS_TOKEN"); process.exit(1); }
-  if (!userId) { console.error("✗ no ALEX_LINE_ID"); process.exit(1); }
+  if (!userId) { console.error("✗ no OPERATOR_LINE_ID"); process.exit(1); }
 
   console.log(`▸ sending to LINE userId ${userId.slice(0,8)}…`);
   try {

@@ -5,7 +5,7 @@ metadata:
   openclaw:
     emoji: "📤"
     requires:
-      env: [LINE_CHANNEL_ACCESS_TOKEN, ALEX_LINE_ID]
+      env: [LINE_CHANNEL_ACCESS_TOKEN, OPERATOR_LINE_ID]
     triggers:
       - "auto-fired by meeting-poll as the LAST step of the post-meeting chain"
       - "/post-meeting-line-digest <YYYY-MM-DD> <bot_id> [--force]"
@@ -20,7 +20,7 @@ via the LINE Messaging API.
 ## Inputs
 
 - `<YYYY-MM-DD>` — meeting date (Taipei wall-clock)
-- `<bot_id>` — Vexa bot UUID
+- `<bot_id>` — Recall.ai bot UUID
 - `--force` (optional) — bypasses BOTH the Friday-only gate AND the idempotency marker
 
 ## Output (LINE message)
@@ -69,7 +69,7 @@ Justin 李彥岑
 ## Secrets
 
 - `LINE_CHANNEL_ACCESS_TOKEN` from `~/.openclaw/secrets/bni-masta.env`
-- `ALEX_LINE_ID` from same env (defaults to `<your-line-user-id>` if missing)
+- `OPERATOR_LINE_ID` from same env (defaults to `<your-line-user-id>` if missing)
 
 ## Implementation
 

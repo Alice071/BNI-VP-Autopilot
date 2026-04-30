@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// resolve-attendance — match Vexa participants → roster, classify, write roll_call
+// resolve-attendance — match Recall.ai participants → roster, classify, write roll_call
 //
 // Usage: node resolve.mjs <YYYY-MM-DD>
 

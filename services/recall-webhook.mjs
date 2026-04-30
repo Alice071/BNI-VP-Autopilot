@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-// vexa-webhook — receive Vexa realtime_endpoints events and persist them.
+// recall-webhook — receive Recall.ai realtime_endpoints events and persist them.
 //
-// Events we care about (per Recall docs):
+// Events we care about (per Recall.ai docs):
 //   - participant_events.join | leave | update | speech_on | speech_off |
 //     webcam_on | webcam_off | chat_message
 //   - transcript.data
 //
-// Auth: if VEXA_WEBHOOK_TOKEN is set, we require ?token=<same> on every POST.
-// (The whsec_... HMAC secret Recall gives is for account-level webhooks, which we
-// don't use yet — so we rely on the query-string token instead.)
+// Auth: if RECALL_WEBHOOK_TOKEN is set, we require ?token=<same> on every POST.
+// (The whsec_... HMAC secret Recall.ai gives is for account-level webhooks, which
+// we don't use yet — so we rely on the query-string token instead.)
 //
 // On each event:
 //   - append one line to raw/meetings/<date>/participants.jsonl (normalized shape)
@@ -26,7 +26,7 @@ import {
 } from "./lib/meeting-handlers.mjs";
 import { s2t } from "./lib/s2t.mjs";
 
-// Load secrets env so libs can access VEXA_API_KEY / region / etc.
+// Load secrets env so libs can access RECALL_API_KEY / region / etc.
 const SECRETS_ENV = "~/.openclaw/secrets/bni-masta.env";
 if (existsSync(SECRETS_ENV)) {
   for (const line of readFileSync(SECRETS_ENV, "utf8").split("\n")) {
@@ -35,8 +35,8 @@ if (existsSync(SECRETS_ENV)) {
   }
 }
 
-const PORT = Number(process.env.VEXA_WEBHOOK_PORT || 18821);
-const TOKEN = process.env.VEXA_WEBHOOK_TOKEN || "";
+const PORT = Number(process.env.RECALL_WEBHOOK_PORT || 18821);
+const TOKEN = process.env.RECALL_WEBHOOK_TOKEN || "";
 const VAULT = "<vault-path>";
 
 function checkToken(req) {
@@ -213,5 +213,5 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, "127.0.0.1", () => {
-  console.log(`vexa-webhook listening on 127.0.0.1:${PORT}`);
+  console.log(`recall-webhook listening on 127.0.0.1:${PORT}`);
 });

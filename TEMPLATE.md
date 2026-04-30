@@ -49,34 +49,52 @@ Quick way to find them all:
 grep -rn "<Your\|<your-" .
 ```
 
-## Vexa (open-source meeting bot)
+## Meeting bot — Recall.ai (recommended)
 
-The original BNI-Masta used Recall.ai. This template was rewritten to **Vexa**
-([vexa.ai](https://vexa.ai), MIT-licensed open-source meeting bot) at the
-template/config level — env var names, filenames, comments, runbook all point
-at Vexa.
+This template ships wired for **[Recall.ai](https://www.recall.ai)** — a
+managed meeting-bot API that joins Zoom (and Meet / Teams), records audio +
+video, emits realtime participant + chat events via webhooks, and produces
+speaker-diarized transcripts using its bundled streaming STT. It's the
+provider the code targets out-of-the-box: `services/recall-webhook.mjs`
+parses Recall.ai's `realtime_endpoints` event shape, and
+`skills/zoom-join/dispatch.mjs` POSTs to `https://<region>.recall.ai/api/v1/bot/`
+with the documented v1 body (`recording_config.realtime_endpoints` +
+`transcript.provider.recallai_streaming`).
 
-**The actual API call code in `skills/zoom-join/dispatch.mjs` and
-`services/vexa-webhook.mjs` is still shaped for Recall.ai.** Adapting to Vexa
-is your homework — search for `TODO(vexa)` to find the spots that need
-rewriting (request bodies, webhook event names, transcript fetching). Vexa's
-API is documented at https://github.com/Vexa-ai/vexa.
+**Pricing:** ~$0.40–$0.50/hr/bot for typical Zoom recording + transcription.
+Free tier credits cover several test meetings.
+See [recall.ai/pricing](https://www.recall.ai/pricing) for current rates.
 
-If you'd rather keep using Recall.ai (~$0.40/hr/bot), the original API shape
-already works — you just need to undo the env var rename: search-replace
-`VEXA_` → `RECALL_` in your `~/.openclaw/secrets/bni-masta.env`.
+**How it integrates with the pipeline:**
+
+| Step | Component | What happens |
+|---|---|---|
+| Dispatch | `zoom-join/dispatch.mjs` | POST to Recall.ai → bot joins Zoom, returns `bot.id` |
+| Realtime events | `services/recall-webhook.mjs` (port 18821, behind Cloudflare Tunnel) | Receives `participant_events.*` + `transcript.data` → appends to `raw/meetings/<date>/{participants,transcript}.jsonl` |
+| In-meeting chat | `services/lib/recall-chat.mjs` → Recall.ai `/send_chat_message/` | Bot posts greetings, name nudges, @-mention answers |
+| Bot done detection | `meeting-poll/poll.mjs` (every 60s) | Polls Recall.ai `/api/v1/bot/<id>/`; when `status_changes[-1].code === "done"` → downloads artifacts → runs `resolve-attendance` → `ingest-claude` → reports |
+
+If you prefer a self-hosted / open-source alternative (e.g.
+[Vexa](https://github.com/Vexa-ai/vexa)), you'll need to adapt the dispatch
+body shape, webhook event names, and transcript fetching to that provider's
+API. The realtime-endpoints / participant_events nesting is Recall-specific.
+
+See [SETUP.md](SETUP.md) for step-by-step Recall.ai signup, region selection,
+and webhook wiring.
 
 ## Setup checklist
 
-See [RUNBOOK.md](RUNBOOK.md) for full host provisioning. Short version:
+See [SETUP.md](SETUP.md) for the per-account walk-through (every key in
+`.env.example`, where to get it, what tier to use). [RUNBOOK.md](RUNBOOK.md)
+covers the host-side provisioning. Short version:
 
 1. Clone this repo
 2. Replace placeholders (table above)
-3. Copy `.env.example` to `~/.openclaw/secrets/bni-masta.env`, chmod 600, fill in real keys
+3. Copy `.env.example` to `~/.openclaw/secrets/bni-masta.env`, chmod 600, fill in real keys (see [SETUP.md](SETUP.md))
 4. Install OpenClaw + login the chat brain: `openclaw auth add openai-codex`
 5. Login Claude CLI: `claude /login`
-6. Provision Vexa + Cloudflare Tunnel + LINE Messaging API + Telegram bot
-7. Boot LaunchAgents: `bash scripts/install-launchagents.sh`
+6. Provision Recall.ai + Cloudflare Tunnel + LINE Messaging API + Telegram bot (see [SETUP.md](SETUP.md))
+7. Boot LaunchAgents: `bash scripts/install.sh`
 8. Smoke-test each pipeline (RUNBOOK.md has the commands)
 
 ## License

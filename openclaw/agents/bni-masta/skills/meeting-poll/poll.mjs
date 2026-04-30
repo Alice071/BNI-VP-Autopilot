@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// meeting-poll — detect Vexa bots that are done, fetch data, run pipeline.
+// meeting-poll — detect Recall.ai bots that are done, fetch data, run pipeline.
 //
 // Runs every 60s via LaunchAgent ai.bnimasta.meeting-poll.plist.
 // Idempotent: writes <bot_id>.done marker so already-processed bots are skipped.
@@ -21,12 +21,12 @@ loadEnvFile(SECRETS_ENV);
 
 const VAULT = "<vault-path>";
 const MEETINGS = join(VAULT, "raw/meetings");
-const REGION = process.env.VEXA_REGION || "ap-northeast-1";
-const API = `https://${REGION}.vexa`;
-const KEY = process.env.VEXA_API_KEY;
+const REGION = process.env.RECALL_REGION || "ap-northeast-1";
+const API = `https://${REGION}.recall.ai`;
+const KEY = process.env.RECALL_API_KEY;
 const SKILL_DIR = "~/.openclaw/agents/bni-masta/agent/skills";
 
-if (!KEY) { console.error("VEXA_API_KEY not set"); process.exit(2); }
+if (!KEY) { console.error("RECALL_API_KEY not set"); process.exit(2); }
 if (!existsSync(MEETINGS)) { console.log("no raw/meetings/ yet"); process.exit(0); }
 
 async function recallGet(path) {
@@ -126,7 +126,7 @@ async function processBot({ botId, date, dir, manifestPath }) {
       const raw = JSON.parse(readFileSync(tjPath, "utf8"));
       const converted = s2tDeep(raw, ["text"]);
       writeFileSync(tjPath, JSON.stringify(converted, null, 2));
-      // Build a transcript.jsonl compatible with meeting-report if the vexa-webhook
+      // Build a transcript.jsonl compatible with meeting-report if the recall-webhook
       // didn't already populate one from realtime transcript.data events.
       const jsonlPath = join(dir, "transcript.jsonl");
       if (!existsSync(jsonlPath) && Array.isArray(converted)) {

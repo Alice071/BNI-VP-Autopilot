@@ -5,7 +5,7 @@ metadata:
   openclaw:
     emoji: "📤"
     requires:
-      env: [ALEX_TELEGRAM_ID]
+      env: [OPERATOR_TELEGRAM_ID]
     triggers:
       - "auto-fired by meeting-poll as the last step of the post-meeting chain"
       - "/post-meeting-digest <YYYY-MM-DD> <bot_id> [--force]"
@@ -20,7 +20,7 @@ to the operator via `<your-telegram-alert-bot>`.
 ## Inputs
 
 - `<YYYY-MM-DD>` — meeting date (Taipei)
-- `<bot_id>` — Vexa bot UUID
+- `<bot_id>` — Recall.ai bot UUID
 - `--force` (optional) — bypass the Friday-only gate AND the idempotency marker
 
 ## Output (Telegram message)
@@ -67,4 +67,4 @@ to the operator via `<your-telegram-alert-bot>`.
 ## Secrets
 
 - Bot token: read from `~/.openclaw/openclaw.json` (`channels.telegram.accounts.bnimasta.botToken`) — falls back to env `BNI_TELEGRAM_BOT_TOKEN` if set
-- Chat ID: env `ALEX_TELEGRAM_ID` (configured in `~/.openclaw/secrets/bni-masta.env`)
+- Chat ID: env `OPERATOR_TELEGRAM_ID` (configured in `~/.openclaw/secrets/bni-masta.env`)

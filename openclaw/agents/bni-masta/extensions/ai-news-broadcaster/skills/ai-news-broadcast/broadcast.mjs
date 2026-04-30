@@ -199,15 +199,15 @@ async function pushBotToGroupWithRetry({ token, groupId, text, attempts, backoff
 // mode when a stage fails after all retries — alerts the operator and STOPS the rest
 // of the day's pipeline so we don't bombard partial recipients.
 //
-// Reads BNI_BOT_TOKEN + ALEX_TELEGRAM_ID from env (loaded from
+// Reads BNI_BOT_TOKEN + OPERATOR_TELEGRAM_ID from env (loaded from
 // ~/.openclaw/secrets/bni-masta.env). Best-effort: if the alert itself fails,
 // logs to stderr but does not throw — we don't want notification failures to
 // mask the original stage failure.
 async function notifyTelegramAlert(text) {
   const token = process.env.BNI_BOT_TOKEN;
-  const chatId = process.env.ALEX_TELEGRAM_ID;
+  const chatId = process.env.OPERATOR_TELEGRAM_ID;
   if (!token || !chatId) {
-    console.error(`[ai-news-broadcast] ⚠ telegram alert skipped — BNI_BOT_TOKEN or ALEX_TELEGRAM_ID missing`);
+    console.error(`[ai-news-broadcast] ⚠ telegram alert skipped — BNI_BOT_TOKEN or OPERATOR_TELEGRAM_ID missing`);
     return { ok: false, error: "credentials missing" };
   }
   try {

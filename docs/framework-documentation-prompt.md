@@ -19,7 +19,7 @@ Required output sections (in this order):
 1. **Hero section** — one-sentence elevator pitch + the bot's lion mascot 🦁
 2. **Concept & aim** — what BNI-Masta is, who it serves, what problem it solves
 3. **Two-brain architecture** — visual diagram showing GPT chat brain ↔ Claude wiki compiler
-4. **System overview diagram** — Mermaid (graph LR) covering: channels → gateway → skills → vault → external services. Use icons for Telegram / LINE / Zoom / Google Sheets / Anthropic / OpenAI / OpenRouter / Vexa
+4. **System overview diagram** — Mermaid (graph LR) covering: channels → gateway → skills → vault → external services. Use icons for Telegram / LINE / Zoom / Google Sheets / Anthropic / OpenAI / OpenRouter / Recall.ai
 5. **Pipeline walkthroughs** — three numbered flows with sequence diagrams:
    - **Pipeline A:** Document ingest (operator sends a PDF / audio note)
    - **Pipeline B:** Live meeting (bot joins Zoom → records → post-meeting chain)
@@ -74,7 +74,7 @@ Five concrete outcomes:
    pages covering every officer role, policy, and procedure. The operator queries it
    conversationally via Telegram or LINE.
 
-3. **Capture every meeting permanently.** A Vexa bot joins each Zoom
+3. **Capture every meeting permanently.** A Recall.ai bot joins each Zoom
    call as an actual participant, records audio + video, transcribes speech
    in real time (Recall's bundled `recallai_streaming`), normalizes
    simplified→Traditional Chinese, and produces a structured meeting report
@@ -111,7 +111,7 @@ NOT handle channel chat. They communicate only through the filesystem (`raw/`).
 │  HUMAN-FACING LAYER                                                  │
 │  • Telegram (<your-telegram-alert-bot>)                                          │
 │  • LINE (BNI-Masta official account)                                  │
-│  • Zoom chat (in-meeting, via Vexa bot)                         │
+│  • Zoom chat (in-meeting, via Recall.ai bot)                    │
 │  • Obsidian Sync (the operator reads/edits the vault on phone + 2 PCs)       │
 └──────────────────────────────────────────────────────────────────────┘
                                   ↓
@@ -143,7 +143,7 @@ NOT handle channel chat. They communicate only through the filesystem (`raw/`).
                                   ↑
 ┌──────────────────────────────────────────────────────────────────────┐
 │  EXTERNAL EVENT LAYER                                                │
-│  • Vexa realtime webhooks → cloudflared tunnel                  │
+│  • Recall.ai realtime webhooks → cloudflared tunnel             │
 │    (<your-webhook-host> → 127.0.0.1:18821)                  │
 │  • Lion-avatar HTML → ai.bnimasta.assets-server :18822 → tunnel      │
 └──────────────────────────────────────────────────────────────────────┘
@@ -161,9 +161,9 @@ file uploads (auto-routed to `pdf-ingest` for `.pdf`, `transcribe-audio` for
 there). Same agent, same skills, different transport. Channel secret +
 access token in `~/.openclaw/secrets/bni-masta.env`.
 
-**Zoom chat (in-meeting)** — driven by the Vexa bot. The bot does NOT
+**Zoom chat (in-meeting)** — driven by the Recall.ai bot. The bot does NOT
 respond on stage 1 (out of meeting); it only acts inside live meetings via
-the vexa-webhook → meeting-handlers pipeline. See Pipeline C below.
+the recall-webhook → meeting-handlers pipeline. See Pipeline C below.
 
 ### Storage layer
 
@@ -223,7 +223,7 @@ The chat brain invokes them by their canonical paths (documented in
 
 | Skill | Trigger | Inputs | Effect |
 |---|---|---|---|
-| **zoom-join** | The operator pastes a Zoom link in Telegram | `<url> [pwd] [title]` | POSTs to Vexa `/api/v1/bot/`. Configures realtime webhooks for `participant_events.{join,leave,update,speech_on,speech_off,webcam_on,webcam_off,chat_message}` + `transcript.data`. Sets bot display name + lion video avatar (HTML page hosted by `ai.bnimasta.assets-server`). Saves manifest to `raw/meetings/<date>/<bot_id>.bot.json`. Auto-leave rules: 5 min alone, 15 min waiting room, 30 min silence, 1 min after everyone leaves, 3 hours hard cap. |
+| **zoom-join** | The operator pastes a Zoom link in Telegram | `<url> [pwd] [title]` | POSTs to Recall.ai `/api/v1/bot/`. Configures realtime webhooks for `participant_events.{join,leave,update,speech_on,speech_off,webcam_on,webcam_off,chat_message}` + `transcript.data`. Sets bot display name + lion video avatar (HTML page hosted by `ai.bnimasta.assets-server`). Saves manifest to `raw/meetings/<date>/<bot_id>.bot.json`. Auto-leave rules: 5 min alone, 15 min waiting room, 30 min silence, 1 min after everyone leaves, 3 hours hard cap. |
 | **pdf-ingest** | `.pdf` upload | `<absolute_path>` | Auto-detects scanned PDFs. Primary OCR = **Gemini 2.5 Flash via OpenRouter** (5-page batches, 4-retry on 5xx/429), fallback to `ocrmypdf`. Writes `raw/handbooks/<slug>/chunk_NN.md`. Auto-chains `ingest-claude`. |
 | **transcribe-audio** | `.mp3` / `.m4a` / `.wav` / `.ogg` / `.mp4` upload | `<absolute_path> [title]` | Posts audio to OpenRouter Gemini 2.5 Flash. Writes `raw/transcripts/<filename>.md`. Auto-ingest. |
 | **member-upsert** | `Add 張大明, 商業保險, <YourChapter>` | `'<json>'` | Appends to `raw/inbox/members_<date>.jsonl`. The Claude wiki compiler picks it up on next `ingest-claude`. |
@@ -233,7 +233,7 @@ The chat brain invokes them by their canonical paths (documented in
 | **attendance-to-sheet** | Auto in chain | `<YYYY-MM-DD> [--force]` | Reads `raw/roll_calls/<date>.md`. Computes PALMS codes (P=1.0, L=0.5, A=0, M=excused, S=0.5). Writes new column to 出席紀錄 tab. Bumps each `wiki/members/<name>.md` front-matter (`attendance_pct`, `last_attendance_scores`, `_last_meeting_palms`, `updated`). **Skips if meeting is `test: true` / `excluded_from_scoring: true`.** Idempotent via marker file. |
 | **roster-sync** | Sun 22:00 LaunchAgent + after every meeting (`--push-only` flag) | `[--push-only]` | Reads all `wiki/members/*.md`. Upserts into <YourChapter>會員名單 + 紅綠燈 tabs via the bundled `gog` CLI (Google API wrapper). |
 | **post-meeting-digest** | Auto in chain (step 6) | `<YYYY-MM-DD> <bot_id> [--force]` | Builds a Telegram message: pipeline status icons (✓/✗/⏭ per skill), attendance counts, summary first-paragraph from meeting_report, top-3 action items, Obsidian + Sheet deep-links. POSTs to `<your-telegram-alert-bot>` chat `<your-telegram-chat-id>`. **Friday-only by default** (Mon-Thu / Sat-Sun runs self-skip with `{skipped:"not_friday"}` marker). Failure does NOT block the chain. |
-| **post-meeting-line-digest** | Auto in chain (step 7, FINAL) | `<YYYY-MM-DD> <bot_id> [--force]` | Builds the BNI 副主席 standard 「每週會後公布夥伴出席狀況」 template using counts + lists from `raw/roll_calls/<date>.md` front-matter. Pushes to the operator's LINE via the Messaging API push endpoint (`LINE_CHANNEL_ACCESS_TOKEN` → `ALEX_LINE_ID = <your-line-user-id>`). Format: 應到/實到/代理/遲到/缺席/來賓 counts + per-bucket lists with `<編號><姓名>` formatting (編號 from `wiki/members/<name>.md::index`). **Friday-only**. Skips test meetings. Idempotent. |
+| **post-meeting-line-digest** | Auto in chain (step 7, FINAL) | `<YYYY-MM-DD> <bot_id> [--force]` | Builds the BNI 副主席 standard 「每週會後公布夥伴出席狀況」 template using counts + lists from `raw/roll_calls/<date>.md` front-matter. Pushes to the operator's LINE via the Messaging API push endpoint (`LINE_CHANNEL_ACCESS_TOKEN` → `OPERATOR_LINE_ID = <your-line-user-id>`). Format: 應到/實到/代理/遲到/缺席/來賓 counts + per-bucket lists with `<編號><姓名>` formatting (編號 from `wiki/members/<name>.md::index`). **Friday-only**. Skips test meetings. Idempotent. |
 
 ### Runtime services (LaunchAgents)
 
@@ -242,7 +242,7 @@ All under `~/Library/LaunchAgents/`. KeepAlive when applicable.
 | LaunchAgent | Schedule | Purpose | Port | Logs |
 |---|---|---|---|---|
 | `ai.openclaw.gateway` | Always-on | Main OpenClaw gateway | 18801 | `~/.openclaw/logs/gateway.{log,err.log}` |
-| `ai.bnimasta.vexa-webhook` | Always-on | Receives Vexa realtime events; calls in-meeting handlers | 18821 | `~/.openclaw/agents/bni-masta/services/vexa-webhook.{stdout,stderr}.log` |
+| `ai.bnimasta.recall-webhook` | Always-on | Receives Recall.ai realtime events; calls in-meeting handlers | 18821 | `~/.openclaw/agents/bni-masta/services/recall-webhook.{stdout,stderr}.log` |
 | `ai.bnimasta.assets-server` | Always-on | Serves the lion video-avatar HTML | 18822 | `~/.openclaw/agents/bni-masta/services/assets-server.{stdout,stderr}.log` |
 | `com.cloudflare.bni-webhook-tunnel` | Always-on | Cloudflared named tunnel: `<your-webhook-host>` → 18821 (webhook) + `/assets/` → 18822 | — | `~/.cloudflared/bni-tunnel.{stdout,stderr}.log` |
 | `ai.bnimasta.meeting-poll` | Every 60s | Detects bot.done, runs the post-meeting chain | — | `~/.openclaw/agents/bni-masta/agent/skills/meeting-poll/poll.{stdout,stderr}.log` |
@@ -257,7 +257,7 @@ All under `~/Library/LaunchAgents/`. KeepAlive when applicable.
 | **OpenRouter** | Chat brain (Claude Haiku 4.5) + Gemini 2.5 Flash for OCR + audio transcription | `OPENROUTER_API_KEY` env | $1/M in, $5/M out (Haiku); ~$0.07/M in (Gemini Flash). ~$1-3 / month total. |
 | **OpenAI Codex (legacy)** | Fallback chat brain (GPT-5.4 via openclaw) | OAuth via ChatGPT Plus subscription | Free under subscription |
 | **Anthropic API** | Wiki compiler (`claude` CLI invoked by `ingest-claude`) | `ANTHROPIC_API_KEY` env (or Claude Code subscription) | Per-token; usually <$1/month |
-| **Vexa** | Zoom bot — joins, records, transcribes, fires realtime webhooks | `VEXA_API_KEY` env, region `ap-northeast-1` | ~$0.50/hour of meeting. Free tier covers initial testing. |
+| **Recall.ai** | Zoom bot — joins, records, transcribes, fires realtime webhooks | `RECALL_API_KEY` env, `RECALL_REGION` (e.g. `ap-northeast-1` / `us-west-2`) | ~$0.40–0.50/hour of meeting. Free tier credits cover initial testing — see [recall.ai/pricing](https://www.recall.ai/pricing). |
 | **Google APIs** (Sheets, Calendar, Drive) | Read/write the chapter Sheet; Future: BNI Calendar | OAuth via the bundled `gog` CLI, account `<your-google-account>` | Free under personal quotas |
 | **Cloudflare** | Named tunnel for the public webhook URL | Cloudflared OAuth, tunnel UUID stored locally | Free |
 | **Telegram Bot API** | `<your-telegram-alert-bot>` send/receive | Bot token | Free |
@@ -287,15 +287,15 @@ Audio: ~10-30 sec per minute of audio.
 ```
 Operator pastes Zoom link in Telegram
   → chat brain invokes zoom-join
-  → POST to Vexa (with avatar config + auto-leave rules + realtime webhooks)
+  → POST to Recall.ai (with avatar config + auto-leave rules + realtime webhooks)
   → bot.json saved to raw/meetings/<date>/<bot_id>.bot.json
   → chat brain replies "BNI-Masta bot dispatched"
 
-  ⏬ Vexa bot joins Zoom
+  ⏬ Recall.ai bot joins Zoom
 
   → realtime webhooks fire to <your-webhook-host>
   → cloudflared forwards to localhost:18821
-  → vexa-webhook.mjs writes participants.jsonl + transcript.jsonl
+  → recall-webhook.mjs writes participants.jsonl + transcript.jsonl
   → calls meeting-handlers.mjs:
       • on bot self-join: post intro (Friday 06:45-07:30 only) + sweep existing participants
       • on participant join: greet, name-check, rename nudge if not in 編號｜姓名｜專業 format
@@ -322,7 +322,7 @@ Operator pastes Zoom link in Telegram
 ```
 Member types in Zoom chat
   → Recall fires participant_events.chat_message webhook
-  → cloudflared → vexa-webhook.mjs
+  → cloudflared → recall-webhook.mjs
   → digRecallData() extracts participant + text from evt.data.data.{participant,data:{text,to}}
   → handleChatMessage:
       • Discover participant (greet + name-check if first activity)
@@ -335,7 +335,7 @@ Member types in Zoom chat
       • Elif text triggers cheer detector (150 patterns):
           pickQuote() from 60-quote bank, avoiding last 8
       • Else: silent
-  → sendChatMessage POSTs to Vexa /send_chat_message/
+  → sendChatMessage POSTs to Recall.ai /send_chat_message/
   → updates state.freeFormResponseCount, state.lastReplyAt, state.recentQuotes
   → 50/meeting cap; 5s inter-reply cooldown
 ```
@@ -407,11 +407,11 @@ committed):
 ```
 OPENROUTER_API_KEY=sk-or-v1-…
 ANTHROPIC_API_KEY=sk-ant-…
-VEXA_API_KEY=…
-VEXA_REGION=ap-northeast-1
-VEXA_WEBHOOK_URL=https://<your-webhook-host>/vexa-webhook
-VEXA_WEBHOOK_TOKEN=…              (optional shared secret)
-ALEX_TELEGRAM_ID=<your-telegram-chat-id>
+RECALL_API_KEY=…
+RECALL_REGION=ap-northeast-1
+RECALL_WEBHOOK_URL=https://<your-webhook-host>/recall-webhook
+RECALL_WEBHOOK_TOKEN=…              (optional shared secret)
+OPERATOR_TELEGRAM_ID=<your-telegram-chat-id>
 BNI_BOT_DISPLAY_NAME=BNI Masta(<YourName>副主席習ＡＩ助理)
 BNI_BOT_AVATAR_URL=https://<your-webhook-host>/assets/masta-avatar.html
 BNI_ROSTER_SHEET_ID=<your-google-sheet-id>
@@ -437,7 +437,7 @@ Approximate monthly cost for 4 Friday meetings + ~10 PDFs + ~30 voice notes:
 | OpenRouter (Gemini OCR) | ~$1 |
 | OpenRouter (Gemini audio transcribe) | ~$1 |
 | Anthropic API (Claude wiki compiler) | <$1 |
-| Vexa (4 × 90-min meetings) | $0.50 × 6 hrs ≈ $3 |
+| Recall.ai (4 × 90-min meetings) | $0.40–0.50 × 6 hrs ≈ $2.40–3 |
 | Obsidian Sync | $10 |
 | **Total** | **≈ $15-17 / month** |
 

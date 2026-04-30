@@ -3,16 +3,16 @@
 <plist version="1.0">
   <dict>
     <key>Label</key>
-    <string>ai.bnimasta.vexa-webhook</string>
+    <string>ai.bnimasta.recall-webhook</string>
     <key>Comment</key>
-    <string>Vexa webhook receiver for BNI-Masta (listens on 127.0.0.1:18821)</string>
+    <string>Recall.ai webhook receiver for BNI-Masta (listens on 127.0.0.1:18821)</string>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
     <true/>
     <key>EnvironmentVariables</key>
     <dict>
-      <key>VEXA_WEBHOOK_PORT</key>
+      <key>RECALL_WEBHOOK_PORT</key>
       <string>18821</string>
       <key>PATH</key>
       <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
@@ -20,13 +20,13 @@
     <key>ProgramArguments</key>
     <array>
       <string>/opt/homebrew/bin/node</string>
-      <string>~/.openclaw/agents/bni-masta/services/vexa-webhook.mjs</string>
+      <string>~/.openclaw/agents/bni-masta/services/recall-webhook.mjs</string>
     </array>
     <key>WorkingDirectory</key>
     <string>~/.openclaw/agents/bni-masta/services</string>
     <key>StandardOutPath</key>
-    <string>~/.openclaw/agents/bni-masta/services/vexa-webhook.stdout.log</string>
+    <string>~/.openclaw/agents/bni-masta/services/recall-webhook.stdout.log</string>
     <key>StandardErrorPath</key>
-    <string>~/.openclaw/agents/bni-masta/services/vexa-webhook.stderr.log</string>
+    <string>~/.openclaw/agents/bni-masta/services/recall-webhook.stderr.log</string>
   </dict>
 </plist>

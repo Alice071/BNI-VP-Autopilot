@@ -6,9 +6,12 @@
 - A ChatGPT Plus/Pro/Team subscription (for Codex OAuth)
 - A Cloudflare account + a domain you control (for named tunnel)
 - An OpenRouter account (for transcription)
-- A Vexa account (for Zoom bot joining)
-- A Google account (for `gog` Calendar integration)
+- A Recall.ai account (for Zoom bot joining + realtime events + transcript)
+- A Google account (for `gog` Calendar / Sheets / Drive integration)
 - Node 20+ (`brew install node`), Python 3.9+
+
+A friendly walk-through of every account + API + plan tier is in
+[SETUP.md](SETUP.md). Read that first if this is your first install.
 
 ## One-shot install
 
@@ -17,7 +20,8 @@ git clone git@github.com:<your-org>/BNI-VP-Autopilot.git
 cd bni-masta
 cp .env.example ~/.openclaw/secrets/bni-masta.env
 chmod 600 ~/.openclaw/secrets/bni-masta.env
-# Fill in the env file with your API keys (see .env.example for which fields)
+# Fill in the env file with your API keys (see .env.example for which fields,
+# and SETUP.md for where each one comes from)
 bash scripts/install.sh
 ```
 
@@ -32,7 +36,7 @@ bash scripts/install.sh
 7. Copies this repo's `vault/*` into `~/Documents/BNI AGENT/BNI AGENT/` (merges — doesn't overwrite existing `raw/` or `wiki/`)
 8. Applies `openclaw/openclaw.json.template` → substitutes placeholders from the env file → writes to `~/.openclaw/openclaw.json` (backs up the existing one first)
 9. Installs LaunchAgents:
-   - `ai.bnimasta.vexa-webhook.plist`
+   - `ai.bnimasta.recall-webhook.plist`
    - `com.cloudflare.bni-webhook-tunnel.plist`
 10. `launchctl load` both
 11. Restarts the OpenClaw gateway
@@ -42,7 +46,7 @@ bash scripts/install.sh
 1. **Cloudflare named tunnel** — `cloudflared tunnel login`, then `cloudflared tunnel create bni-webhook`, then `cloudflared tunnel route dns bni-webhook <your-hostname>`. Update `~/.cloudflared/config-bni.yml` with the tunnel UUID.
 2. **Google OAuth for `gog`** — once, browser: `gog auth credentials ~/path/to/client_secret.json && gog auth add you@gmail.com --services gmail,calendar,drive,contacts,docs,sheets`.
 3. **Dedicated BNI Google Calendar** — create it at https://calendar.google.com → copy Calendar ID → paste into env as `BNI_CALENDAR_ID`.
-4. **Vexa signup** — grab API key (the token itself, NOT the webhook signing secret). Region-specific — most Asia/Pacific accounts land on `ap-northeast-1`.
+4. **Recall.ai signup** — sign up at [recall.ai](https://www.recall.ai), grab the API key from the dashboard (the token itself, NOT the webhook signing secret). Note your region — most APAC accounts land on `ap-northeast-1`, US accounts on `us-west-2` or `us-east-1`. Set both `RECALL_API_KEY` and `RECALL_REGION` in env.
 5. **Telegram bot** — create with `@BotFather` → copy token → paste into env.
 6. **LINE bot** — create in LINE Developers Console → copy channelSecret + channelAccessToken → paste into env.
 7. **Obsidian plugins** — install Dataview, Templater, Tasks, Calendar community plugins (see top-level OBSIDIAN-SETUP.md).
@@ -56,7 +60,7 @@ curl -s "https://api.telegram.org/bot$BNI_BOT_TOKEN/getMe" | jq .result.username
 # expected: "Bnimasta_bot"
 
 # Webhook tunnel reachable?
-curl -s -o /dev/null -w "%{http_code}\n" -X POST "$VEXA_WEBHOOK_URL" \
+curl -s -o /dev/null -w "%{http_code}\n" -X POST "$RECALL_WEBHOOK_URL" \
   -H "content-type: application/json" -d '{"event":"ping"}'
 # expected: 200
 
@@ -77,7 +81,7 @@ bash ~/.openclaw/agents/bni-masta/agent/skills/ingest-claude/compile.sh raw/inbo
 launchctl kickstart -k gui/$(id -u)/ai.openclaw.gateway
 
 # webhook
-launchctl kickstart -k gui/$(id -u)/ai.bnimasta.vexa-webhook
+launchctl kickstart -k gui/$(id -u)/ai.bnimasta.recall-webhook
 
 # cloudflared
 launchctl kickstart -k gui/$(id -u)/com.cloudflare.bni-webhook-tunnel

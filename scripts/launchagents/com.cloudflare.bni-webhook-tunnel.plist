@@ -5,7 +5,7 @@
     <key>Label</key>
     <string>com.cloudflare.bni-webhook-tunnel</string>
     <key>Comment</key>
-    <string>Cloudflared named tunnel for BNI-Masta Vexa webhook</string>
+    <string>Cloudflared named tunnel for BNI-Masta Recall.ai webhook</string>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>

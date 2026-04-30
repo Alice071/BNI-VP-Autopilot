@@ -29,10 +29,10 @@ When you see "the bot" in user messages it means the chat brain. When you see "C
 │   │       ├── ingest-claude/                 ← shells out `claude --print` to compile
 │   │       ├── member-upsert/                 ← appends to raw/inbox/
 │   │       ├── transcribe-audio/              ← OpenRouter Gemini 2.5 Flash
-│   │       ├── zoom-join/                     ← POSTs to Vexa /api/v2/bot/
+│   │       ├── zoom-join/                     ← POSTs to Recall.ai /api/v1/bot/
 │   │       └── resolve-attendance/            ← exact → Levenshtein → Claude arbitration
 │   └── services/
-│       └── vexa-webhook.mjs                 ← HTTP :18821 — Vexa events land here
+│       └── recall-webhook.mjs                 ← HTTP :18821 — Recall.ai events land here
 └── secrets/bni-masta.env                      ← chmod 600 — never commit
 
 ~/Documents/BNI AGENT/BNI AGENT/               ← THE VAULT (Obsidian opens this)
@@ -42,7 +42,7 @@ When you see "the bot" in user messages it means the chat brain. When you see "C
 │   ├── handbooks/202101版_領導團隊手冊/...    ← OCR'd chunks
 │   ├── transcripts/                           ← Zoom + voice-note transcripts
 │   ├── roll_calls/                            ← resolve-attendance output
-│   ├── meetings/<date>/participants.jsonl     ← raw Vexa participant events
+│   ├── meetings/<date>/participants.jsonl     ← raw Recall.ai participant events
 │   ├── visitors/                              ← unmatched display names
 │   └── inbox/                                 ← drop-zone for anything the operator sends the bot
 ├── wiki/                                      ← YOU maintain these
@@ -57,7 +57,7 @@ When you see "the bot" in user messages it means the chat brain. When you see "C
 └── <your-tunnel-uuid>.json                            ← tunnel credentials
 
 ~/Library/LaunchAgents/
-├── ai.bnimasta.vexa-webhook.plist           ← KeepAlive the webhook service
+├── ai.bnimasta.recall-webhook.plist         ← KeepAlive the webhook service
 └── com.cloudflare.bni-webhook-tunnel.plist    ← KeepAlive cloudflared
 ```
 
@@ -76,7 +76,7 @@ bash ~/.openclaw/agents/bni-masta/agent/skills/ingest-claude/compile.sh
 
 ## Secrets locations (never commit)
 
-- `~/.openclaw/secrets/bni-masta.env` — OpenRouter, Vexa, Anthropic, LINE, Telegram, calendar ID
+- `~/.openclaw/secrets/bni-masta.env` — OpenRouter, Recall.ai, Anthropic, LINE, Telegram, calendar ID
 - `~/.openclaw/auth-profiles/openai-codex.json` — OpenAI Codex OAuth (ChatGPT sub)
 - `~/.openclaw/auth-profiles/gog.json` — Google OAuth (after the operator runs `gog auth add …`)
 - `~/.cloudflared/<your-tunnel-uuid>.json` — Cloudflare tunnel credentials
@@ -104,10 +104,10 @@ bash ~/.openclaw/agents/bni-masta/agent/skills/ingest-claude/compile.sh
 Telegram/LINE  →  OpenClaw gateway :18801  →  agent `bni-masta` (GPT-5.4 Codex)  →  skills
                                                                                    ├─ shells out `claude` (wiki compiler)
                                                                                    ├─ POSTs OpenRouter (transcription)
-                                                                                   └─ POSTs Vexa (Zoom bot)
+                                                                                   └─ POSTs Recall.ai (Zoom bot)
 
-Vexa  →  https://<your-webhook-host>/vexa-webhook
-           →  cloudflared → :18821 (vexa-webhook.mjs LaunchAgent)
+Recall.ai  →  https://<your-webhook-host>/recall-webhook
+           →  cloudflared → :18821 (recall-webhook.mjs LaunchAgent)
            →  writes raw/meetings/<date>/participants.jsonl
            →  triggers resolve-attendance → triggers ingest-claude (Claude) → wiki
 ```

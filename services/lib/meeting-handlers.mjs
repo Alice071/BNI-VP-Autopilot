@@ -147,11 +147,11 @@ function visitorWelcome(displayName) {
 // participant_events.join only fires for post-bot arrivals, so we'd miss
 // them otherwise).
 async function fetchExistingParticipants(botId) {
-  const API_KEY = process.env.VEXA_API_KEY;
-  const REGION = process.env.VEXA_REGION || "ap-northeast-1";
+  const API_KEY = process.env.RECALL_API_KEY;
+  const REGION = process.env.RECALL_REGION || "ap-northeast-1";
   if (!API_KEY || !botId) return [];
   try {
-    const r = await fetch(`https://${REGION}.vexa/api/v1/bot/${botId}/`, {
+    const r = await fetch(`https://${REGION}.recall.ai/api/v1/bot/${botId}/`, {
       headers: { authorization: `Token ${API_KEY}` },
     });
     if (!r.ok) return [];

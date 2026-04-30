@@ -1,6 +1,6 @@
 ---
 name: transcribe-audio
-description: Transcribe an audio or video file to text using Gemini 2.5 Flash via OpenRouter. Writes the transcript to raw/transcripts/ and auto-triggers ingest-claude. Use for voice notes the operator sends, or ad-hoc audio not from Vexa.
+description: Transcribe an audio or video file to text using Gemini 2.5 Flash via OpenRouter. Writes the transcript to raw/transcripts/ and auto-triggers ingest-claude. Use for voice notes the operator sends, or ad-hoc audio not from Recall.ai.
 metadata:
   openclaw:
     emoji: "🎙️"

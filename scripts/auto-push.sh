@@ -19,7 +19,8 @@
 
 set -euo pipefail
 
-REPO="$HOME/Documents/Claude/Projects/BNI-VP-Autopilot"
+# REPO can be overridden via env if your clone lives elsewhere.
+REPO="${BNI_AUTOPILOT_REPO:-$(cd "$(dirname "$0")/.." && pwd)}"
 LIVE_AGENT="$HOME/.openclaw/agents/bni-masta/agent"
 LIVE_SERVICES="$HOME/.openclaw/agents/bni-masta/services"
 LIVE_SCRIPTS="$HOME/.openclaw/agents/bni-masta/scripts"
@@ -89,7 +90,7 @@ rsync -a --delete \
   --exclude='*' \
   "$LIVE_AGENT/" openclaw/agents/bni-masta/
 
-# 2. services/ — vexa-webhook + assets-server + lib + package.json
+# 2. services/ — recall-webhook + assets-server + lib + package.json
 mkdir -p services
 rsync -a --delete \
   --exclude='*.log' \

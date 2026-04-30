@@ -5,7 +5,7 @@
 >
 > **Version:** 0.7.0 (Stage 7 — install-ready: full-chain `--dry-run` integration test green; `--test-targets` flag + `config/test-targets.json` for the BNI Masta 測試 install-time live test; LaunchAgent plist + install/uninstall scripts; `INSTALL.md` checklist; `tools/verify-sources.mjs`; **Threads permanently dropped per the original creator 2026-04-26**)
 > **Last updated:** 2026-04-26
-> **Owner:** the operator (alexma@goldenraintree.tw)
+> **Owner:** the operator (the user installing this template — fill in your own contact)
 > **Stage:** 7 of 7 (see `plan.md` §14 for the full implementation order; v1.1 was eliminated when Threads was permanently dropped at plan v0.5)
 
 ---
@@ -66,7 +66,7 @@ These are the files in the parent BNI Masta tree we read from or shell out to. *
 | `skills/personal-line-broadcast/SKILL.md` | Reference for how Computer Use availability works | Read-only; we mirror the same operational model (live Claude Desktop session at trigger time). |
 | `skills/meeting-deck-report/deck.mjs` | Pattern reference for Chrome-headless PDF render + `gog drive upload`/`gog drive share` | We **vendor (copy-paste)** patterns into `skills/ai-news-deck/deck.mjs` (Stage 3) and (later) the Stage-5 orchestrator. Stage-3 vendors: the `CHROME` const at line `14`, the `loadEnvFile()` env-loader at lines `19-26`, and the `spawnSync(CHROME, [...])` PDF-render invocation at lines `427-435`. Stage-5 will vendor the `gog drive upload/share` helpers at lines `285-312`. We do not import this file. |
 | `skills/post-meeting-line-digest/digest.mjs` | Pattern reference for LINE Messaging API push (`sendLine()` ~15-line `fetch` POST) and env-loading (`loadEnvFile`) | Same — we vendor the pattern, do not import. |
-| `~/.openclaw/secrets/bni-masta.env` | Shared secrets file | We **read** existing keys (`LINE_CHANNEL_ACCESS_TOKEN`, `ALEX_LINE_ID`) and we **append** new keys (see §6). We never overwrite or remove existing keys. |
+| `~/.openclaw/secrets/bni-masta.env` | Shared secrets file | We **read** existing keys (`LINE_CHANNEL_ACCESS_TOKEN`, `OPERATOR_LINE_ID`) and we **append** new keys (see §6). We never overwrite or remove existing keys. |
 | `~/.openclaw/openclaw.json` | Fallback secrets file (for `LINE_CHANNEL_ACCESS_TOKEN` + the operator's userId) | Read-only fallback, mirrors what `post-meeting-line-digest/digest.mjs` does. |
 | `SOUL.md` | Behavioral contract (cost ceilings, confirmation rules) | Read-only — informs our cost cap (`MAX_SCRAPE_COST_USD=0.50`, well under the SOUL-defined $1 confirmation threshold). |
 
@@ -191,7 +191,7 @@ LINE_PERSONAL_TARGET_GROUPS=<YourChapter> 學員交流, BNI 副主席群
 
 `LINE_PERSONAL_TARGET_GROUPS` is a NEW key. It does NOT collide with the existing meeting-side `BNI_PERSONAL_LINE_TARGETS` / `BNI_PERSONAL_LINE_TEST_TARGETS` (different namespace; news targets and meeting targets can differ). Should be appended to `~/.openclaw/secrets/bni-masta.env` at install time (Stage 7).
 
-**Existing env keys we READ (do not modify):** `LINE_CHANNEL_ACCESS_TOKEN`, `ALEX_LINE_ID`, `BNI_VAULT_DIR`.
+**Existing env keys we READ (do not modify):** `LINE_CHANNEL_ACCESS_TOKEN`, `OPERATOR_LINE_ID`, `BNI_VAULT_DIR`.
 
 ### 6.3 New system requirements
 

@@ -5,7 +5,7 @@ metadata:
   openclaw:
     emoji: "🎯"
     requires:
-      env: [OPENROUTER_API_KEY, LINE_CHANNEL_ACCESS_TOKEN, ALEX_LINE_ID]
+      env: [OPENROUTER_API_KEY, LINE_CHANNEL_ACCESS_TOKEN, OPERATOR_LINE_ID]
     triggers:
       - "auto-fired by meeting-poll after detailed-meeting-report"
       - "/meeting-deck-report <YYYY-MM-DD> <bot_id> [--force] [--no-line]"
@@ -40,7 +40,7 @@ template) which is now superseded by this richer single-message + deck.
 ## Inputs
 
 - `<YYYY-MM-DD>` — meeting date (Taipei)
-- `<bot_id>` — Vexa bot UUID
+- `<bot_id>` — Recall.ai bot UUID
 - `--force` — bypass BOTH the Friday-only gate AND the idempotency marker
 - `--no-line` — skip LINE push (just save HTML+PDF to vault, upload to Drive)
 
@@ -73,7 +73,7 @@ template) which is now superseded by this richer single-message + deck.
 ## Dependencies
 
 - `OPENROUTER_API_KEY` (Haiku 4.5)
-- `LINE_CHANNEL_ACCESS_TOKEN` + `ALEX_LINE_ID`
+- `LINE_CHANNEL_ACCESS_TOKEN` + `OPERATOR_LINE_ID`
 - `gog` CLI (for Drive upload + share) under `<your-google-account>`
 - Google Chrome at `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`
 - `pdftoppm` (poppler) — installed already, used by other skills too (not strictly needed here since we use Chrome PDF)

@@ -31,14 +31,14 @@
                               │ ingest-claude   │──▶ claude --print
                               │ member-upsert   │──▶ append raw/inbox/
                               │ transcribe-audio│──▶ OpenRouter Gemini
-                              │ zoom-join       │──▶ Vexa API
+                              │ zoom-join       │──▶ Recall.ai API
                               │ resolve-attend  │──▶ fuzzy-match roster
                               └─────────────────┘
                                         ▲
                                         │
                                         │
                     ┌───────────────────┴─────────────┐
-                    │ vexa-webhook.mjs LaunchAgent  │
+                    │ recall-webhook.mjs LaunchAgent│
                     │ :18821 loopback                 │
                     └───────────────────▲─────────────┘
                                         │
@@ -47,7 +47,7 @@
                   https://<your-webhook-host>
                                         ▲
                                         │
-                                   Vexa
+                                   Recall.ai
                                         ▲
                                         │
                               joins as participant "BNI-Masta"
@@ -97,18 +97,18 @@ Telegram ◀── confirmation ────────┘
 Telegram ──/zoom-join URL pwd──▶ bni-masta
                                     │
                                     ▼ zoom-join skill
-                              POST Vexa /api/v2/bot/
+                              POST Recall.ai /api/v1/bot/
                               {bot_name: "BNI-Masta", webhook_url: https://bni-webhook…}
                                     │
                                     ▼ saves raw/meetings/<date>/<bot_id>.bot.json
                                     │
-Vexa bot joins Zoom  ──▶ during meeting:
+Recall.ai bot joins Zoom  ──▶ during meeting:
                               bot.status_change events
                               participant_join / leave / rename / speech
                                     │
                                     ▼ HTTPS → <your-webhook-host>
                                     ▼ cloudflared tunnel
-                                    ▼ vexa-webhook.mjs (:18821)
+                                    ▼ recall-webhook.mjs (:18821)
                               appends raw/meetings/<date>/participants.jsonl
                                     │
 Meeting ends ──bot.done──▶         ▼ auto-chain:
@@ -141,5 +141,5 @@ Telegram ◀── answer + [[rules/副主席職責]] ──┘
 | Port | Process | LaunchAgent |
 |---|---|---|
 | 18801 | OpenClaw gateway | `ai.openclaw.gateway.plist` (system's) |
-| 18821 | vexa-webhook.mjs | `ai.bnimasta.vexa-webhook.plist` |
+| 18821 | recall-webhook.mjs | `ai.bnimasta.recall-webhook.plist` |
 | (out) | cloudflared → :18821 | `com.cloudflare.bni-webhook-tunnel.plist` |

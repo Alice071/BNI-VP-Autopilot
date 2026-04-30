@@ -154,9 +154,9 @@ The script lives in the agent dir, NOT in the workspace. `which zoom-join` will 
 - ❌ Spawn a Zoom client subprocess
 - ❌ "Test joining" yourself
 
-You (the chat brain) NEVER join a meeting. Only the Vexa bot joins, and ONLY by calling `dispatch.mjs` above. If `dispatch.mjs` fails, REPORT the failure — do not try a different way to join.
+You (the chat brain) NEVER join a meeting. Only the Recall.ai bot joins, and ONLY by calling `dispatch.mjs` above. If `dispatch.mjs` fails, REPORT the failure — do not try a different way to join.
 
-Never say "I'll join the meeting" — say "BNI-Masta bot dispatched" because the chat brain (you) doesn't join; the Vexa bot does.
+Never say "I'll join the meeting" — say "BNI-Masta bot dispatched" because the chat brain (you) doesn't join; the Recall.ai bot does.
 
 ## Boundary — two brains, don't cross
 

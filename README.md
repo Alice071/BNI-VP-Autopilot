@@ -21,7 +21,7 @@
 
 **🎬 會議中（每週五早上 BNI 例會）：**
 
-- 自動派遣 Vexa 機器人登入 Zoom 會議
+- 自動派遣 Recall.ai 機器人登入 Zoom 會議
 - **自動點名** — 用 5 層 fuzzy match 把 Zoom 顯示名稱對到會員名冊，準確判斷每位夥伴的狀態（準時 / 遲到 / 早退 / 全程 / 缺席 / 代理人）
 - 主動在 Zoom chat 提醒會員把顯示名稱改成 BNI 標準格式 `編號｜姓名｜專業`
 - 即時辨識誰是正式會員、誰是來賓、誰是 Helper —— 同樣對來賓與 Helper 提醒改名規範（例如 `來賓/王小華/品牌設計` 或 `helper/李大明/AI 顧問`）
@@ -64,12 +64,12 @@
 | `ingest-claude` | 自動或 `/ingest-claude` | 殼出 Claude；依 `vault/CLAUDE.md` 編譯 `raw/` → `wiki/` |
 | `member-upsert` | <YourName> 主動提供已知會員的新資訊 | 將 JSON 附加到 `raw/inbox/members_<date>.jsonl` |
 | `transcribe-audio` | <YourName> 送語音 / 音訊檔 | OpenRouter Gemini 2.5 Flash → `raw/transcripts/` |
-| `zoom-join` | `/zoom-join <url> <pwd>` | 派遣 Vexa 機器人 "BNI-Masta" 加入 Zoom |
-| `resolve-attendance` | Vexa webhook 觸發 `bot.done` 後自動 | 三層 fuzzy match (exact → Levenshtein → Claude) → `raw/roll_calls/<date>.md` |
+| `zoom-join` | `/zoom-join <url> <pwd>` | 派遣 Recall.ai 機器人 "BNI-Masta" 加入 Zoom |
+| `resolve-attendance` | `meeting-poll` 偵測到 Recall.ai bot.done 後自動 | 三層 fuzzy match (exact → Levenshtein → Claude) → `raw/roll_calls/<date>.md` |
 
 ### 會議中互動 (v1)
 
-機器人透過 Vexa 加入後，會主動參與 Zoom 聊天：
+機器人透過 Recall.ai 加入後，會主動參與 Zoom 聊天：
 - **自我介紹** — 發布一行自介（僅限週五 06:45–07:30 台北時間）
 - **歡迎 + 名稱檢查** — 對 35 位會員名冊做 fuzzy match；提示會員改成 `編號｜姓名｜專業` 格式；歡迎來賓
 - **@-mention LLM 回覆** — `@BNI Masta <問題>` → ~7 秒上下文回答（GPT-5.4 透過 Codex OAuth 免費）
@@ -82,7 +82,7 @@
 
 | Tag | 能力 | 觸發 | 參考 |
 |---|---|---|---|
-| (無 tag) | **Pipeline #1 — Post-meeting Pipeline**（自主、bot 驅動、**10 步驟**鏈，由 `meeting-poll` LaunchAgent 在 Vexa `bot.done` 後啟動；v3.3 加了 Step 10 = `personal-line-broadcast --write-plan` 來把資料交棒給 Pipeline #2） | 每次週五例會自動 | `vault/wiki/reference/post-meeting-pipeline.md` |
+| (無 tag) | **Pipeline #1 — Post-meeting Pipeline**（自主、bot 驅動、**10 步驟**鏈，由 `meeting-poll` LaunchAgent 在 Recall.ai `bot.done` 後啟動；v3.3 加了 Step 10 = `personal-line-broadcast --write-plan` 來把資料交棒給 Pipeline #2） | 每次週五例會自動 | `vault/wiki/reference/post-meeting-pipeline.md` |
 | `linpc-v1.0` | **Pipeline #2 — Post-meeting LinePc Pipeline**（`personal-line-broadcast` planner + Claude Desktop Computer Use executor，給 bot 因 LINE 1-OA-per-group 限制無法進入的群組用）。**v3.3（2026-04-27）已全自動：週五早上**— Pipeline #1 Step 10 寫 plan；Anthropic 排程任務 `post-meeting-cu-primary`（週五 09:30）+ `post-meeting-cu-backup-and-escalate`（週五 11:00）透過 CU 投遞 + 重試 + Telegram 告警。訊息格式改成 BNI 副主席標準會後出席公告（標頭 + 零填充統計區塊 + 各 bucket 會員清單含 編號 + 英文別名） | 週五早上自主 | `vault/wiki/reference/post-meeting-linepc-pipeline.md` |
 | `ai-news-v1.0` | **AI News Broadcaster Pipeline (#3)** — v3 階梯式，每天 09:00 台北時間透過 launchd 啟動。Apify 爬蟲（72 小時視窗）→ OpenRouter Haiku 整理 + zh-TW 翻譯 + 互動 CTA → 6 頁 PDF → 3 個目的地依序投遞：09:00 bot LINE → `<YourTestGroup>`（canary）· 09:05 寫 plan + Anthropic 排程任務 CU → `<YourCommunityGroup>`（因 ~8 分鐘 dispatch 延遲實際 ~09:14）· 09:20 bot LINE → `<YourChapterMainGroup>`。每階段 bot 重試 3 次（指數退避）；失敗 → 透過 `<your-telegram-alert-bot>` Telegram 告警 + 停止剩餘階段。CU 自動恢復：`ai-news-cu-primary` 任務 09:05 + `ai-news-cu-backup-and-escalate` 10:00 | 每日排程 | `vault/wiki/reference/ai-news-broadcaster.md`、`openclaw/agents/bni-masta/extensions/ai-news-broadcaster/MANIFEST.md` |
 
@@ -91,12 +91,13 @@
 - `openclaw/agents/bni-masta/skills/` — 所有 BNI Masta skills（v1 框架 31 檔案，sha256 pinned）
 - `openclaw/agents/bni-masta/extensions/ai-news-broadcaster/` — 第 3 條 pipeline 的嚴格 additive 擴充
 - `vault/` — Obsidian vault 結構（不含成員 PII）
-- `services/` — `vexa-webhook.mjs` 等常駐服務
+- `services/` — `recall-webhook.mjs` 等常駐服務
 - `scripts/` — 安裝、部署、auto-push、backup 腳本
 
 ### 找更多資訊
 
 - **Template 使用指南**：[TEMPLATE.md](TEMPLATE.md)（先看這個，所有要替換的 placeholder 都在這）
+- **帳號 + API 設定指南**：[SETUP.md](SETUP.md)（每個外部帳號 / API 怎麼開、要花多少錢）
 - **安裝指南**：[RUNBOOK.md](RUNBOOK.md)
 - **架構圖 + 資料流**：[ARCHITECTURE.md](ARCHITECTURE.md)
 - **新 Claude session 上手**：[CLAUDE.md](CLAUDE.md)
@@ -107,9 +108,9 @@
 
 這個 repo 是個 **template** — 含程式碼、schema、agent system prompt、LaunchAgent plist、vault 結構、runbook，但**絕不**含 secret 或個資。要真的執行，目標機器需自行準備：
 
-1. **Secrets** in `~/.openclaw/secrets/bni-masta.env`（chmod 600）— `VEXA_API_KEY`、`OPENROUTER_API_KEY`、`LINE_CHANNEL_*`、`BNI_BOT_TOKEN`、`ALEX_LINE_ID`、`ALEX_TELEGRAM_ID`、`BNI_CALENDAR_ID`、`APIFY_TOKEN`
+1. **Secrets** in `~/.openclaw/secrets/bni-masta.env`（chmod 600）— `RECALL_API_KEY`、`OPENROUTER_API_KEY`、`LINE_CHANNEL_*`、`BNI_BOT_TOKEN`、`OPERATOR_LINE_ID`、`OPERATOR_TELEGRAM_ID`、`BNI_CALENDAR_ID`、`APIFY_TOKEN`
 2. **OAuth profiles** — OpenAI Codex（GPT-5.4 聊天腦，ChatGPT Plus/Pro/Team 免費）、Google（`gog` CLI）、Anthropic（Claude CLI）
-3. **Cloudflare named tunnel** — Vexa + LINE webhook 入口
+3. **Cloudflare named tunnel** — Recall.ai + LINE webhook 入口
 4. **`~/.openclaw/openclaw.json`** runtime config — bot 帳號、gateway port、LINE 訪問策略
 5. **Obsidian vault PII** — 從 `~/Archive/BNI-Masta-Backups/` 還原，或新分會從零建檔
 
@@ -129,7 +130,7 @@ In short: **a tireless, always-on, never-forgets digital VP assistant that joins
 
 **🎬 During the meeting (Friday morning BNI 例會):**
 
-- Auto-dispatches a Vexa bot to join the Zoom meeting
+- Auto-dispatches a Recall.ai bot to join the Zoom meeting
 - **Automated roll-call** — a 5-tier fuzzy-match cascade resolves Zoom display names against the chapter roster, classifying every member's attendance state (準時 on-time / 遲到 late / 早退 left-early / 全程 full-meeting / 缺席 absent / 代理人 substitute)
 - Proactively reminds members in Zoom chat to rename their display name to the BNI standard format `編號｜姓名｜專業` (#-id｜name｜expertise)
 - Recognises members vs visitors (來賓) vs helpers in real time — and nudges visitors/helpers to follow the corresponding naming convention (e.g. `來賓/王小華/品牌設計` or `helper/李大明/AI consultant`)
@@ -172,12 +173,12 @@ Built on [OpenClaw](https://openclaw.ai). Follows [Karpathy's LLM-Wiki pattern](
 | `ingest-claude` | Auto or `/ingest-claude` | Shells out Claude; compiles `raw/` → `wiki/` per `vault/CLAUDE.md` |
 | `member-upsert` | The operator volunteers new info about a named member | Appends JSON to `raw/inbox/members_<date>.jsonl` |
 | `transcribe-audio` | The operator sends a voice note / audio file | OpenRouter Gemini 2.5 Flash → `raw/transcripts/` |
-| `zoom-join` | `/zoom-join <url> <pwd>` | Dispatches Vexa bot "BNI-Masta" to join the Zoom |
-| `resolve-attendance` | Auto after Vexa webhook fires `bot.done` | 3-tier fuzzy match (exact → Levenshtein → Claude) → `raw/roll_calls/<date>.md` |
+| `zoom-join` | `/zoom-join <url> <pwd>` | Dispatches Recall.ai bot "BNI-Masta" to join the Zoom |
+| `resolve-attendance` | Auto after `meeting-poll` detects Recall.ai `bot.done` | 3-tier fuzzy match (exact → Levenshtein → Claude) → `raw/roll_calls/<date>.md` |
 
 ## In-meeting interaction (v1)
 
-Once the bot joins via Vexa, it actively participates in Zoom chat:
+Once the bot joins via Recall.ai, it actively participates in Zoom chat:
 - **Intro** — posts a one-line self-intro (Friday 06:45–07:30 Taipei window only)
 - **Greet + name-check** — fuzzy-matches new joiners against the 35-member roster; nudges members to the `編號｜姓名｜專業` format; welcomes 來賓
 - **@-mention LLM reply** — `@BNI Masta <question>` → ~7s contextual answer via GPT-5.4 (free under Codex OAuth)
@@ -193,7 +194,7 @@ Once the bot joins via Vexa, it actively participates in Zoom chat:
 After every Friday 例會, the post-meeting chain ends with two parallel digests:
 
 - **Telegram** (`<your-telegram-alert-bot>` → operator's chat) — pipeline status, attendance counts, summary, action items, Obsidian + Sheet links. Friday-only; idempotent per bot.
-- **LINE** (`ALEX_LINE_ID`) — the BNI 副主席 standard 「每週會後公布夥伴出席狀況」 template: 應到 / 實到 / 代理 / 遲到 / 缺席 / 來賓 counts + per-bucket lists formatted as `<編號><姓名>`. Built from `raw/roll_calls/<date>.md` front-matter (which `resolve-attendance` populates with all the count + list fields).
+- **LINE** (`OPERATOR_LINE_ID`) — the BNI 副主席 standard 「每週會後公布夥伴出席狀況」 template: 應到 / 實到 / 代理 / 遲到 / 缺席 / 來賓 counts + per-bucket lists formatted as `<編號><姓名>`. Built from `raw/roll_calls/<date>.md` front-matter (which `resolve-attendance` populates with all the count + list fields).
 
 Test/non-Friday meetings skip both with `{skipped: …}` markers.
 
@@ -219,14 +220,14 @@ This repo is a **template**. It contains all code, schemas, agent system prompts
 
 | Variable | Where to get it | Used by |
 |---|---|---|
-| `VEXA_API_KEY` | [vexa](https://vexa) → API Keys | `zoom-join`, `meeting-poll` |
-| `VEXA_REGION` | usually `ap-northeast-1` for Asia/Pacific | same |
+| `RECALL_API_KEY` | [recall.ai](https://www.recall.ai) → Dashboard → API Keys | `zoom-join`, `meeting-poll` |
+| `RECALL_REGION` | the region your Recall.ai account was provisioned in (typically `ap-northeast-1`, `us-west-2`, or `us-east-1`) | same |
 | `OPENROUTER_API_KEY` | [openrouter.ai](https://openrouter.ai/keys) → starts with `sk-or-...` | `transcribe-audio`, `detailed-meeting-report`, `meeting-deck-report`, `claude-responder` (Haiku 4.5) |
 | `ANTHROPIC_API_KEY` | optional fallback for OpenRouter | n/a (default uses OpenRouter) |
 | `LINE_CHANNEL_SECRET` + `LINE_CHANNEL_ACCESS_TOKEN` | [LINE Developers Console](https://developers.line.biz) → Messaging API channel | LINE bot |
-| `ALEX_LINE_ID` | your own LINE userId (`U` + 32 hex) — captured the first time you DM the bot | outbound LINE push |
+| `OPERATOR_LINE_ID` | your own LINE userId (`U` + 32 hex) — captured the first time you DM the bot | outbound LINE push |
 | `BNI_BOT_TOKEN` | Telegram `@BotFather` → `/newbot` | Telegram bot |
-| `ALEX_TELEGRAM_ID` | your Telegram chat_id — get via [@userinfobot](https://t.me/userinfobot) | outbound Telegram push |
+| `OPERATOR_TELEGRAM_ID` | your Telegram chat_id — get via [@userinfobot](https://t.me/userinfobot) | outbound Telegram push |
 | `BNI_CALENDAR_ID` | Google Calendar → create dedicated "BNI" calendar → copy ID | `calendar-sync` (v2) |
 
 ### B. OAuth profiles (~/.openclaw/auth-profiles/, regenerated by browser flow)
@@ -245,7 +246,7 @@ cloudflared tunnel create bni-webhook
 cloudflared tunnel route dns bni-webhook bni-webhook.<your-domain>.com
 # Edit ~/.cloudflared/config-bni.yml with the new tunnel UUID and your hostname
 ```
-Without this, Vexa + LINE webhooks can't reach your Mac → no realtime events, no in-meeting bot interaction, no LINE replies.
+Without this, Recall.ai + LINE webhooks can't reach your Mac → no realtime events, no in-meeting bot interaction, no LINE replies.
 
 ### D. OpenClaw runtime config (~/.openclaw/openclaw.json)
 
@@ -276,14 +277,15 @@ rclone copy ~/Archive/BNI-Masta-Backups/ remote:bni-backups/ --max-age 7d
 [ ] OpenAI Codex OAuth done (test: `openclaw chat hello`)
 [ ] gog OAuth done (test: `gog calendar list`)
 [ ] Claude CLI installed + logged in (test: `claude --print "hi"`)
-[ ] Cloudflared tunnel up (test: `curl -sI https://<your-host>/vexa-webhook`)
+[ ] Cloudflared tunnel up (test: `curl -sI https://<your-host>/recall-webhook`)
 [ ] LaunchAgents loaded (verify: `launchctl list | grep -E "ai\.bnimasta|ai\.openclaw"`)
-[ ] First Vexa webhook arrives → check `tail -f ~/.openclaw/logs/gateway.log`
+[ ] First Recall.ai webhook arrives → check `tail -f ~/.openclaw/logs/gateway.log`
 ```
 
 ## Installation (fresh Mac)
 
-See [RUNBOOK.md](RUNBOOK.md) for the step-by-step.
+1. Read [SETUP.md](SETUP.md) — walk-through for every external account & API key (OpenRouter, Recall.ai, LINE, Telegram, Cloudflare, Google, Anthropic, Apify) including pricing and where each key goes.
+2. Read [RUNBOOK.md](RUNBOOK.md) — step-by-step host install (Homebrew, OpenClaw, OAuth flows, LaunchAgents, smoke test).
 
 ## Architecture diagram + data flow
 
@@ -303,7 +305,7 @@ Three top-level capabilities are now stable on `main`, each with a git tag and i
 
 | Tag | Capability | Trigger | Reference |
 |---|---|---|---|
-| (no tag) | **Pipeline #1 — Post-meeting** (autonomous bot-driven **10-step** chain via `meeting-poll` LaunchAgent on Vexa `bot.done`; v3.3 added Step 10 = `personal-line-broadcast --write-plan` to hand off Pipeline #2) | per Friday meeting, automatic | `vault/wiki/reference/post-meeting-pipeline.md` |
+| (no tag) | **Pipeline #1 — Post-meeting** (autonomous bot-driven **10-step** chain via `meeting-poll` LaunchAgent on Recall.ai `bot.done`; v3.3 added Step 10 = `personal-line-broadcast --write-plan` to hand off Pipeline #2) | per Friday meeting, automatic | `vault/wiki/reference/post-meeting-pipeline.md` |
 | `linpc-v1.0` | **Pipeline #2 — Post-meeting LinePc** (`personal-line-broadcast` planner + Claude Desktop Computer Use executor for groups bot can't enter due to LINE 1-OA-per-group). **v3.3 (2026-04-27): now fully autonomous on Friday** — Pipeline #1 Step 10 writes the plan; Anthropic scheduled tasks `post-meeting-cu-primary` (Fri 09:30) + `post-meeting-cu-backup-and-escalate` (Fri 11:00) deliver via CU + retry + Telegram-escalate. Message body switched to BNI 副主席 chapter-announcement format (header + zero-padded stats block + per-bucket member listings with 編號 + English alias) | autonomous Friday morning | `vault/wiki/reference/post-meeting-linepc-pipeline.md` |
 | `ai-news-v1.0` | **AI News Broadcaster Pipeline (#3)** — v3 staggered, daily 09:00 Taipei via launchd. Apify scrape (72h window) → OpenRouter Haiku curate + zh-TW translate + interaction CTA → 6-page PDF → 3 destinations sequentially: 09:00 bot LINE → `<YourTestGroup>` (canary) · 09:05 plan-write + Anthropic-scheduled-task CU → `<YourCommunityGroup>` (~09:14 actual due to ~8 min dispatch delay) · 09:20 bot LINE → `<YourChapterMainGroup>`. Per-stage bot retry 3× with exp-backoff; on failure → Telegram alert via `<your-telegram-alert-bot>` + halt remaining stages. CU leg auto-recovery: `ai-news-cu-primary` task at 09:05 + `ai-news-cu-backup-and-escalate` at 10:00 (Telegram-escalates if Mac was off / Claude Desktop unavailable). | scheduled daily | `vault/wiki/reference/ai-news-broadcaster.md`, `openclaw/agents/bni-masta/extensions/ai-news-broadcaster/MANIFEST.md`, `extensions/ai-news-broadcaster/config/schedule.json` |
 

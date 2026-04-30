@@ -36,8 +36,8 @@ function getLineToken() {
   try { return JSON.parse(readFileSync(OPENCLAW_JSON, "utf8")).channels?.line?.channelAccessToken || null; }
   catch { return null; }
 }
-function getAlexLineId() {
-  if (process.env.ALEX_LINE_ID) return process.env.ALEX_LINE_ID;
+function getOperatorLineId() {
+  if (process.env.OPERATOR_LINE_ID) return process.env.OPERATOR_LINE_ID;
   try {
     const cfg = JSON.parse(readFileSync(OPENCLAW_JSON, "utf8"));
     const allow = cfg.channels?.line?.allowFrom || [];
@@ -318,7 +318,7 @@ function uploadAndShare(localPath, displayName) {
 // abort the others (partial-success is fine — operator critical, groups optional).
 function getLineTargets() {
   const targets = [];
-  const userId = getAlexLineId();
+  const userId = getOperatorLineId();
   if (userId) targets.push({ kind: "user", id: userId });
   const groupCsv = process.env.BNI_DECK_LINE_GROUP_IDS || "";
   for (const raw of groupCsv.split(",").map(s => s.trim()).filter(Boolean)) {

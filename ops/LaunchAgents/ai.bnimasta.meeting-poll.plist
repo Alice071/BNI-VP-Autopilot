@@ -5,7 +5,7 @@
     <key>Label</key>
     <string>ai.bnimasta.meeting-poll</string>
     <key>Comment</key>
-    <string>Polls Vexa for finished bots + runs the post-meeting pipeline.</string>
+    <string>Polls Recall.ai for finished bots + runs the post-meeting pipeline.</string>
     <key>StartInterval</key>
     <integer>60</integer>
     <key>EnvironmentVariables</key>

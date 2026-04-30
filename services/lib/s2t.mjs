@@ -1,5 +1,5 @@
 // s2t — Simplified → Traditional Chinese (Taiwan variant) conversion via OpenCC.
-// Vexa's STT outputs 簡體 even for Taiwan Mandarin speech; this normalizes
+// Recall.ai's bundled STT outputs 簡體 even for Taiwan Mandarin speech; this normalizes
 // to 繁體 with Taiwan-specific phrase substitutions (s2twp.json config).
 //
 // brew install opencc  — must be present. If missing, we fall through unchanged.

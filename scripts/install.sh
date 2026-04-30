@@ -34,7 +34,9 @@ echo "=== 5. Seed agent dir ==="
 mkdir -p "$AGENT_DIR/agent/skills" "$AGENT_DIR/services"
 cp -R "$REPO/openclaw/agents/bni-masta/skills/"* "$AGENT_DIR/agent/skills/"
 cp "$REPO/openclaw/agents/bni-masta/SOUL.md" "$AGENT_DIR/agent/"
-cp "$REPO/services/vexa-webhook.mjs" "$AGENT_DIR/services/"
+cp "$REPO/services/recall-webhook.mjs" "$AGENT_DIR/services/"
+mkdir -p "$AGENT_DIR/services/lib"
+cp "$REPO/services/lib/"*.mjs "$AGENT_DIR/services/lib/"
 cp "$REPO/services/package.json" "$AGENT_DIR/services/"
 chmod +x "$AGENT_DIR/agent/skills/"*/*.{mjs,sh} 2>/dev/null || true
 
@@ -60,13 +62,13 @@ if [[ ! -f "$HOME/.openclaw/openclaw.json.template-applied" ]]; then
 fi
 
 echo "=== 8. LaunchAgents ==="
-install -m 0644 "$REPO/scripts/launchagents/ai.bnimasta.vexa-webhook.plist" \
-  "$HOME/Library/LaunchAgents/ai.bnimasta.vexa-webhook.plist"
+install -m 0644 "$REPO/scripts/launchagents/ai.bnimasta.recall-webhook.plist" \
+  "$HOME/Library/LaunchAgents/ai.bnimasta.recall-webhook.plist"
 install -m 0644 "$REPO/scripts/launchagents/com.cloudflare.bni-webhook-tunnel.plist" \
   "$HOME/Library/LaunchAgents/com.cloudflare.bni-webhook-tunnel.plist"
-launchctl unload "$HOME/Library/LaunchAgents/ai.bnimasta.vexa-webhook.plist" 2>/dev/null || true
+launchctl unload "$HOME/Library/LaunchAgents/ai.bnimasta.recall-webhook.plist" 2>/dev/null || true
 launchctl unload "$HOME/Library/LaunchAgents/com.cloudflare.bni-webhook-tunnel.plist" 2>/dev/null || true
-launchctl load "$HOME/Library/LaunchAgents/ai.bnimasta.vexa-webhook.plist"
+launchctl load "$HOME/Library/LaunchAgents/ai.bnimasta.recall-webhook.plist"
 launchctl load "$HOME/Library/LaunchAgents/com.cloudflare.bni-webhook-tunnel.plist"
 
 echo "=== 9. Restart gateway ==="
@@ -75,7 +77,7 @@ launchctl kickstart -k "gui/$(id -u)/ai.openclaw.gateway" || true
 echo "=== 10. Smoke test ==="
 sleep 4
 curl -s "https://api.telegram.org/bot${BNI_BOT_TOKEN}/getMe" | jq -r '.result.username // "UNKNOWN"'
-curl -s -o /dev/null -w "webhook: %{http_code}\n" --max-time 10 -X POST "$VEXA_WEBHOOK_URL" -H "content-type: application/json" -d '{"event":"ping"}'
+curl -s -o /dev/null -w "webhook: %{http_code}\n" --max-time 10 -X POST "$RECALL_WEBHOOK_URL" -H "content-type: application/json" -d '{"event":"ping"}'
 openclaw channels status --probe 2>&1 | tail -10
 
 echo "✔ install complete. Manual next steps:"

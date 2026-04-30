@@ -179,7 +179,7 @@ source:
 - NEVER invent quotes or content. Only summarize actual transcript text.
 - For a speaker's '引薦指令' or '本週主軸', use near-verbatim summary if they stated it clearly; otherwise mark '??'.
 - If a speaker's name doesn't match any wiki/members/*.md, use the display name bare + add a \`> [!warning] 無法對應會員：<name>\` callout once under '各位發言重點' (or inline for 例會).
-- Skip (unknown) and the Vexa bot itself.
+- Skip (unknown) and the Recall.ai bot itself.
 - Preserve Traditional Chinese (don't translate).
 - Mark sparse transcript extractions with '??'.
 

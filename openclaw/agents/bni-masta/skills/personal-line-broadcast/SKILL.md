@@ -19,7 +19,7 @@ This is the **second post-meeting pipeline**, parallel to the autonomous Post-me
 
 | | Pipeline #1 — Post-meeting | Pipeline #2 — Post-meeting LinePc (this one) |
 |---|---|---|
-| Trigger | `meeting-poll` LaunchAgent on Vexa bot.done | Claude Desktop session, manual or scheduled |
+| Trigger | `meeting-poll` LaunchAgent on Recall.ai bot.done | Claude Desktop session, manual or scheduled |
 | Channel | Bot account `<your-line-bot-id>` via LINE Messaging API | Operator's personal LINE account via LINE for Mac |
 | Reach | Bot's DMs + groups bot is in | Any group personal account is in (incl. groups with 1-OA conflict) |
 | Runtime | Node + LaunchAgent | Node planner + Claude Desktop Computer Use executor |
@@ -46,7 +46,7 @@ node broadcast.mjs <YYYY-MM-DD> <bot_id> --mark-done '<results-json>' [--dry-run
 ### Inputs
 
 - `<YYYY-MM-DD>` — meeting date (Taipei timezone)
-- `<bot_id>` — Vexa bot UUID; used to find the deck-done marker
+- `<bot_id>` — Recall.ai bot UUID; used to find the deck-done marker
 - `--force` — bypass Friday-only gate AND idempotency marker
 - `--dry-run` — plan a single literal `OK` payload to test target only
 

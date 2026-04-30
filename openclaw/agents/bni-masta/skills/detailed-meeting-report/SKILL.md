@@ -59,7 +59,7 @@ last_leave, all speech segments combined.
 ## Inputs
 
 - `<YYYY-MM-DD>` — meeting date (Taipei)
-- `<bot_id>` — Vexa bot UUID
+- `<bot_id>` — Recall.ai bot UUID
 - `--no-summary` — skip per-member Haiku summaries (faster, no LLM cost)
 - `--force` — bypass the idempotency marker
 

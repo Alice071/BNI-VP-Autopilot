@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// zoom-join — dispatch a Vexa bot to a Zoom meeting
+// zoom-join — dispatch a Recall.ai bot to a Zoom meeting
 //
 // UX: DM "/zoom-join <url_or_id> [pwd] [title]"
 //   - url can be a full invite URL, a plain URL, or just a meeting ID
@@ -24,9 +24,9 @@ function loadEnvFile(p) {
 loadEnvFile(SECRETS_ENV);
 
 const VAULT = "<vault-path>";
-const REGION = process.env.VEXA_REGION || "ap-northeast-1";
-const WEBHOOK_BASE = process.env.VEXA_WEBHOOK_URL; // e.g. https://<your-webhook-host>/vexa-webhook
-const WEBHOOK_TOKEN = process.env.VEXA_WEBHOOK_TOKEN || "";
+const REGION = process.env.RECALL_REGION || "ap-northeast-1";
+const WEBHOOK_BASE = process.env.RECALL_WEBHOOK_URL; // e.g. https://<your-webhook-host>/recall-webhook
+const WEBHOOK_TOKEN = process.env.RECALL_WEBHOOK_TOKEN || "";
 const BOT_AVATAR_URL = process.env.BNI_BOT_AVATAR_URL ||
   "https://<your-webhook-host>/assets/masta-avatar.html";
 
@@ -36,7 +36,7 @@ function today() {
 }
 
 // URL normalization — handles every URL shape the operator might paste:
-//   1. plain meeting ID ("73444799136") + pwd → builds zoom.us/j/ID?pwd=PWD
+//   1. plain meeting ID (9–11 digits) + pwd → builds zoom.us/j/<id>?pwd=PWD
 //   2. full URL already with ?pwd=<hash> → leave untouched
 //   3. full URL without ?pwd= + raw pwd arg → append ?pwd=PWD or &pwd=PWD
 function normalizeZoom(url, pwd) {
@@ -57,9 +57,9 @@ function normalizeZoom(url, pwd) {
 async function main() {
   const [, , urlArg, pwdArg, titleArg] = process.argv;
   if (!urlArg) { console.error("usage: dispatch.mjs <zoom_url_or_id> [pwd] [title]"); process.exit(2); }
-  const apiKey = process.env.VEXA_API_KEY;
-  if (!apiKey) { console.error("VEXA_API_KEY not set"); process.exit(2); }
-  if (!WEBHOOK_BASE) { console.error("VEXA_WEBHOOK_URL not set"); process.exit(2); }
+  const apiKey = process.env.RECALL_API_KEY;
+  if (!apiKey) { console.error("RECALL_API_KEY not set"); process.exit(2); }
+  if (!WEBHOOK_BASE) { console.error("RECALL_WEBHOOK_URL not set"); process.exit(2); }
 
   const meetingUrl = normalizeZoom(urlArg, pwdArg);
   const title = titleArg || `今日會議 ${today()}`;
@@ -75,9 +75,9 @@ async function main() {
       video_mixed_layout: "gallery_view_v2",
       // (No chat_messages opt-in needed in recording_config — the opt-in is
       //  purely the "participant_events.chat_message" entry in the events list
-      //  on realtime_endpoints below. Recall delivers text inside the event
+      //  on realtime_endpoints below. Recall.ai delivers text inside the event
       //  payload at evt.data.data.data.{text,to}.)
-      // Real-time webhook — correct shape per Recall docs
+      // Real-time webhook — correct shape per Recall.ai docs
       realtime_endpoints: [
         {
           type: "webhook",
@@ -97,7 +97,7 @@ async function main() {
       ],
     },
     metadata: { title, dispatched_by: "bni-masta", dispatched_at: new Date().toISOString() },
-    // Replace the default "lightning bolt" avatar. Recall only accepts kind "webpage"
+    // Replace the default "lightning bolt" avatar. Recall.ai only accepts kind "webpage"
     // or "default" — we host an HTML page that fills the frame with the lion PNG.
     output_media: {
       camera: {
@@ -105,7 +105,7 @@ async function main() {
         config: { url: BOT_AVATAR_URL },
       },
     },
-    // Auto-leave rules — so we don't waste Recall minutes on abandoned meetings.
+    // Auto-leave rules — so we don't waste Recall.ai minutes on abandoned meetings.
     automatic_leave: {
       // Leave after 5 minutes if the bot is the ONLY participant (nobody else joined yet)
       bot_detection: {
@@ -122,12 +122,12 @@ async function main() {
     },
   };
 
-  const r = await fetch(`https://${REGION}.vexa/api/v1/bot/`, {
+  const r = await fetch(`https://${REGION}.recall.ai/api/v1/bot/`, {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Token ${apiKey}` },
     body: JSON.stringify(body),
   });
-  if (!r.ok) { console.error(`Vexa ${r.status}: ${await r.text()}`); process.exit(1); }
+  if (!r.ok) { console.error(`Recall.ai ${r.status}: ${await r.text()}`); process.exit(1); }
   const j = await r.json();
 
   const dir = join(VAULT, "raw/meetings", today());

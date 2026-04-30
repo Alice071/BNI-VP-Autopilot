@@ -1,19 +1,19 @@
 ---
 name: resolve-attendance
-description: Match Vexa raw participant events against the member roster using exact → fuzzy → LLM arbitration, classify each attendance as 準時到/遲到/缺席/早退/全程/代理人/來賓, and write raw/roll_calls/<date>.md. Runs automatically after the Vexa webhook signals meeting end.
+description: Match Recall.ai raw participant events against the member roster using exact → fuzzy → LLM arbitration, classify each attendance as 準時到/遲到/缺席/早退/全程/代理人/來賓, and write raw/roll_calls/<date>.md. Runs automatically after meeting-poll detects the Recall.ai bot is done.
 metadata:
   openclaw:
     emoji: "🪪"
     requires:
       bins: [claude]
     triggers:
-      - "Vexa webhook bot.done event"
+      - "meeting-poll detects bot.done"
       - "/resolve-attendance <date>"
 ---
 
 # resolve-attendance
 
-Take Vexa's raw `participants.jsonl` + the member roster in `wiki/members/*.md` and produce a clean attendance table.
+Take Recall.ai's raw `participants.jsonl` + the member roster in `wiki/members/*.md` and produce a clean attendance table.
 
 ## Inputs
 

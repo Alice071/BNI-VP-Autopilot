@@ -39,7 +39,7 @@ function getBotToken() {
   } catch { return null; }
 }
 function getChatId() {
-  return process.env.ALEX_TELEGRAM_ID || "";
+  return process.env.OPERATOR_TELEGRAM_ID || "";
 }
 
 // ---------- parsing ----------
@@ -230,7 +230,7 @@ async function main() {
   const token = getBotToken();
   const chatId = getChatId();
   if (!token) { console.error("✗ no Telegram bot token (BNI_TELEGRAM_BOT_TOKEN env or openclaw.json)"); process.exit(1); }
-  if (!chatId) { console.error("✗ no chat_id (ALEX_TELEGRAM_ID env)"); process.exit(1); }
+  if (!chatId) { console.error("✗ no chat_id (OPERATOR_TELEGRAM_ID env)"); process.exit(1); }
 
   console.log(`▸ sending to chat ${chatId}…`);
   try {
